@@ -5,12 +5,13 @@ from airflow.models import Variable
 
 # Default DAG args
 default_args = {
-    'owner': 'Charizard',
+    'owner': 'Airflow',
     'start_date': airflow.utils.dates.days_ago(1),
     'dataflow_default_options': {
         'project': Variable.get('project_ids'),
         'location': Variable.get('location'),
         'tempLocation': Variable.get('gcs_basepath') + '/temp',
+        'runner': 'DataflowRunner',
     }
 }
 
@@ -21,7 +22,7 @@ dag = DAG(
 )
 
 pokemon_dataflow_task = DataFlowPythonOperator(
-    task_id='dfp_pokemon_totals_by_type_task',
+    task_id='df_pokemontotals',
     py_file= Variable.get('gcs_basepath') + '/dags/dfp_pokemon_totals_by_type.py',
     options={
         'project': Variable.get('project_ids'),
