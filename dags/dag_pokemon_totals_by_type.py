@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
 from airflow.models import Variable
 
-
+# Default DAG args
 default_args = {
     'owner': 'Charizard',
     'start_date': airflow.utils.dates.days_ago(1),
