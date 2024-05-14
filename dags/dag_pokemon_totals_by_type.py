@@ -6,7 +6,7 @@ from airflow.models import Variable
 
 default_args = {
     'owner': 'Charizard',
-    'start_date': airflow.utils.dates.days_ago(0),
+    'start_date': airflow.utils.dates.days_ago(1),
     'dataflow_default_options': {
         'project': Variable.get('project_ids'),
         'location': Variable.get('location'),
