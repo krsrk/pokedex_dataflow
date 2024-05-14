@@ -1,3 +1,3 @@
 steps:
 - name: 'gcr.io/cloud-builders/gsutil'
-args: ['-m', 'cp', '-r', '${_DAGS_DIRECTORY}', 'gs://${_DAGS_BUCKET}/dags']
+  args: ['-m', 'cp', '-r', '${_DAGS_DIRECTORY}', 'gs://${_DAGS_BUCKET}/dags']
