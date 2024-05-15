@@ -22,6 +22,7 @@ dag = DAG(
 )
 
 pokemon_dataflow_task = DataFlowPythonOperator(
+    task_id='pokemon_dataflow',
     py_file= Variable.get('gcs_basepath') + '/dags/dfp_pokemon_totals_by_type.py',
     options={
         'project': Variable.get('project_ids'),
