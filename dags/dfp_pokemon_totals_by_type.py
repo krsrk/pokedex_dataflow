@@ -13,9 +13,30 @@ pipeline_options = PipelineOptions(
 
 def parse_pokemon_csv(line):
     import csv
-    reader = csv.DictReader([line])
-    for row in reader:
-        return row
+    if not line.strip():
+        return None
+
+    try:
+        if parse_pokemon_csv.header is None:
+            parse_pokemon_csv.header = line
+            return None
+
+        reader = csv.DictReader([parse_pokemon_csv.header, line])
+        for row in reader:
+            return {
+                'id': int(row['id']),
+                'name': row['name'],
+                'type': int(row['type']),
+                'type_name': row['type_name'],
+                'height': float(row['height']),
+                'weight': float(row['weight'])
+            }
+    except (csv.Error, ValueError) as e:
+        print(f"Error parsing CSV line: {e}")
+        return None
+
+
+parse_pokemon_csv.header = None
 
 
 def run_pipeline():
@@ -24,50 +45,24 @@ def run_pipeline():
                 pipeline
                 | 'ReadFromGCS' >> beam.io.ReadFromText('gs://us-central1-cmp-sandbox-dev-e1950a8d-bucket/data/pokemon.csv')
                 | 'ParseCSV' >> beam.Map(parse_pokemon_csv)
-        )
-
-        '''result_set = (
-                poke_data
-                | "Filter by Pokemon Type Name" >> beam.Filter(
-                                                        lambda pokemon: 'type' in pokemon and 'type_name' in pokemon
-                                                   )
-                | "Extract Pokemon Type" >> beam.Map(lambda pokemon: (pokemon['type'], pokemon['type_name']))
-                | "Group by Pokemon Type" >> beam.CombinePerKey(beam.combiners.ToListCombineFn())
-                | "Formatted Data" >> beam.Map(
-                                            lambda tipo_conteo: f"type_name: {tipo_conteo[1][0]}, total: {str(len(tipo_conteo[1]))}"
-                                      )
-        )'''
-
-        filter_data = (
-                poke_data
+                | 'FilterNulls' >> beam.Filter(lambda x: x is not None)
                 | "FilterPokemonTypeName" >> beam.Filter(lambda pokemon: 'type' in pokemon and 'type_name' in pokemon)
         )
 
-        extracted_data = (
-                filter_data
+        format_data = (
+                poke_data
                 | "ExtractPokemonType" >> beam.Map(lambda pokemon: (pokemon['type'], pokemon['type_name']))
-        )
-
-        group_data = (
-                extracted_data
                 | "GroupByPokemonType" >> beam.CombinePerKey(beam.combiners.ToListCombineFn())
-        )
-
-        formated_data = (
-                group_data
                 | "Formatted Data" >> beam.Map(
-            lambda tipo_conteo: f"type_name: {tipo_conteo[1][0]}, total: {str(len(tipo_conteo[1]))}")
+            lambda tipo_conteo: {'type_name': tipo_conteo[1][0], 'total': len(tipo_conteo[1])})
         )
 
-        formated_data | "PrintFormattedData" >> beam.Map(print)
-        print(formated_data)
+        format_data | beam.Map(print)
 
-        formated_data | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
+        format_data | 'WriteToBigQuery' >> beam.io.WriteToBigQuery(
             table='proud-limiter-422923-k4.pokemons.totals_by_type',
             write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
         )
-
-        print('Pokemon Data imported Successfully!')
 
 
 if __name__ == '__main__':
