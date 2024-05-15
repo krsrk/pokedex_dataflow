@@ -1,3 +1,4 @@
+import csv
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 
@@ -11,11 +12,18 @@ pipeline_options = PipelineOptions(
 )
 
 
+def parse_pokemon_csv(line):
+    reader = csv.DictReader([line])
+    for row in reader:
+        return row
+
+
 def run_pipeline():
     with beam.Pipeline(options=pipeline_options) as pipeline:
         poke_data = (
                 pipeline
                 | 'ReadFromGCS' >> beam.io.ReadFromText('gs://us-central1-cmp-sandbox-dev-e1950a8d-bucket/data/pokemon.csv')
+                | 'ParseCSV' >> beam.Map(parse_pokemon_csv)
         )
 
         '''result_set = (
