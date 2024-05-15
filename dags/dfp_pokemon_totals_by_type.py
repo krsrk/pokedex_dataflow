@@ -1,4 +1,3 @@
-import csv
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 
@@ -13,6 +12,7 @@ pipeline_options = PipelineOptions(
 
 
 def parse_pokemon_csv(line):
+    import csv
     reader = csv.DictReader([line])
     for row in reader:
         return row
