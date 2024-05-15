@@ -36,3 +36,7 @@ def run_pipeline():
         )
 
         print('Pokemon Data imported Successfully!')
+
+
+if __name__ == '__main__':
+    run_pipeline()
